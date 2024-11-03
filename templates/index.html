@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Business Builder AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .chat-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            height: 60px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+
+        .loading {
+            display: none;
+            color: #666;
+            font-style: italic;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .response-section {
+            display: none;
+        }
+
+        .response-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>Business Builder AI</h1>
+        
+        <div class="input-area">
+            <textarea id="userInput" placeholder="Describe your business goals and current situation..."></textarea>
+            <button onclick="analyzeInput()">Analyze</button>
+        </div>
+
+        <div class="loading" id="loading">Analyzing your business situation...</div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showSection('strategy')">Strategy</div>
+            <div class="tab" onclick="showSection('clarity')">Clarity Insights</div>
+            <div class="tab" onclick="showSection('niche')">Niche Analysis</div>
+            <div class="tab" onclick="showSection('action')">Action Plan</div>
+        </div>
+
+        <div id="strategy" class="response-section active">
+            <h2>Final Strategy</h2>
+            <div class="message" id="finalStrategy"></div>
+        </div>
+
+        <div id="clarity" class="response-section">
+            <h2>Clarity Insights</h2>
+            <div class="message" id="clarityInsights"></div>
+        </div>
+
+        <div id="niche" class="response-section">
+            <h2>Niche Analysis</h2>
+            <div class="message" id="nicheAnalysis"></div>
+        </div>
+
+        <div id="action" class="response-section">
+            <h2>Action Plan</h2>
+            <div class="message" id="actionPlan"></div>
+        </div>
+    </div>
+
+    <script>
+        function analyzeInput() {
+            const userInput = document.getElementById('userInput').value;
+            const loading = document.getElementById('loading');
+            
+            loading.style.display = 'block';
+            
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_input: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('finalStrategy').innerText = data.final_strategy;
+                document.getElementById('clarityInsights').innerText = data.clarity_insights;
+                document.getElementById('nicheAnalysis').innerText = data.niche_analysis;
+                document.getElementById('actionPlan').innerText = data.action_plan;
+                loading.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loading.style.display = 'none';
+            });
+        }
+
+        function showSection(sectionId) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update sections
+            document.querySelectorAll('.response-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+    </script>
+</body>
+</html> 

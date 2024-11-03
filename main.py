@@ -1,3 +1,4 @@
+from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
@@ -9,10 +10,9 @@ from agents.business_strategist import BusinessStrategist
 # Load environment variables
 load_dotenv()
 
-def run_business_builder():
-    # Get user input
-    user_input = input("Describe your business goals and current situation: ")
+app = Flask(__name__)
 
+def run_business_builder(user_input):
     try:
         # Initialize agents
         clarity_agent = ClarityAgent()
@@ -21,16 +21,9 @@ def run_business_builder():
         strategist = BusinessStrategist()
 
         # Run each agent in sequence
-        print("\nAnalyzing your business situation...")
         clarity_insights = clarity_agent.analyze(user_input)
-
-        print("\nIdentifying your ideal niche...")
         niche_analysis = niche_agent.analyze(clarity_insights)
-
-        print("\nCreating your action plan...")
         action_plan = action_agent.create_plan(niche_analysis)
-
-        print("\nGenerating your business strategy...")
         final_strategy = strategist.create_strategy(
             clarity_insights, 
             niche_analysis, 
@@ -38,12 +31,25 @@ def run_business_builder():
             user_input
         )
 
-        # Print final strategy
-        print("\n=== Your Business Strategy ===")
-        print(final_strategy)
+        return {
+            "clarity_insights": clarity_insights,
+            "niche_analysis": niche_analysis,
+            "action_plan": action_plan,
+            "final_strategy": final_strategy
+        }
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        return {"error": str(e)}
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    user_input = request.json.get('user_input', '')
+    results = run_business_builder(user_input)
+    return jsonify(results)
 
 if __name__ == "__main__":
-    run_business_builder() 
+    app.run(debug=True) 
